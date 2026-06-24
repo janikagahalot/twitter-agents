@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const PERSONA_COLORS = {
   tech_guru: '#1d9bf0', philosopher: '#7856ff', foodie: '#f4212e',
@@ -32,9 +33,12 @@ function TweetCard({ tweet }) {
 }
 
 export default function Feed() {
+  const { token, user } = useAuth();
   const [tweets, setTweets] = useState([]);
   const [pendingTweets, setPendingTweets] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [posting, setPosting] = useState(false);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -70,6 +74,22 @@ export default function Feed() {
     setPendingTweets([]);
   }
 
+  async function postTweet(e) {
+    e.preventDefault();
+    if (!draft.trim()) return;
+    setPosting(true);
+    try {
+      await fetch('/api/tweets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content: draft.trim() }),
+      });
+      setDraft('');
+    } finally {
+      setPosting(false);
+    }
+  }
+
   return (
     <div>
       <div style={styles.feedHeader}>
@@ -77,6 +97,26 @@ export default function Feed() {
         <span style={{ ...styles.dot, background: connected ? '#00ba7c' : '#e0245e' }} />
         <span style={{ fontSize: 13, color: '#657786' }}>{connected ? 'Live' : 'Offline'}</span>
       </div>
+      {token && (
+        <form onSubmit={postTweet} style={styles.compose}>
+          <textarea
+            style={styles.composeInput}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={`What's on your mind, @${user?.username}?`}
+            maxLength={280}
+            rows={3}
+          />
+          <div style={styles.composeFooter}>
+            <span style={{ fontSize: 12, color: draft.length > 260 ? '#e0245e' : '#657786' }}>
+              {280 - draft.length}
+            </span>
+            <button type="submit" style={styles.tweetButton} disabled={posting || !draft.trim()}>
+              {posting ? 'Posting…' : 'Tweet'}
+            </button>
+          </div>
+        </form>
+      )}
       {pendingTweets.length > 0 && (
         <button onClick={loadPending} style={styles.banner}>
           ↑ {pendingTweets.length} new tweet{pendingTweets.length !== 1 ? 's' : ''} — click to load
@@ -124,5 +164,19 @@ const styles = {
     background: '#1d9bf0', color: '#fff',
     border: 'none', cursor: 'pointer',
     fontSize: 14, fontWeight: 600, textAlign: 'center',
+  },
+  compose: {
+    background: '#fff', border: '1px solid #e1e8ed', borderRadius: 12,
+    padding: '14px 16px', marginBottom: 16,
+  },
+  composeInput: {
+    width: '100%', border: 'none', outline: 'none', resize: 'none',
+    fontSize: 16, fontFamily: 'inherit', lineHeight: 1.5, boxSizing: 'border-box',
+  },
+  composeFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  tweetButton: {
+    padding: '8px 20px', background: '#1d9bf0', color: '#fff',
+    border: 'none', borderRadius: 24, fontWeight: 700, fontSize: 14,
+    cursor: 'pointer', fontFamily: 'inherit',
   },
 };
