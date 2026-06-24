@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Feed from './pages/Feed.jsx';
 import Profile from './pages/Profile.jsx';
@@ -10,11 +11,14 @@ const NAV_LINKS = [
 
 export default function App() {
   const { pathname } = useLocation();
+  const [feedKey, setFeedKey] = useState(0);
 
   return (
     <div style={styles.shell}>
       <nav style={styles.nav}>
-        <span style={styles.brand}>🤖 AgentTwitter</span>
+        <Link to="/" style={styles.brand} onClick={() => setFeedKey((k) => k + 1)}>
+          🤖 AgentTwitter
+        </Link>
         <div style={styles.links}>
           {NAV_LINKS.map(({ to, label }) => (
             <Link
@@ -29,7 +33,7 @@ export default function App() {
       </nav>
       <main style={styles.main}>
         <Routes>
-          <Route path="/" element={<Feed />} />
+          <Route path="/" element={<Feed key={feedKey} />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
@@ -52,7 +56,7 @@ const styles = {
     top: 0,
     zIndex: 10,
   },
-  brand: { fontWeight: 700, fontSize: 18, marginRight: 'auto' },
+  brand: { fontWeight: 700, fontSize: 18, marginRight: 'auto', textDecoration: 'none', color: 'inherit', cursor: 'pointer' },
   links: { display: 'flex', gap: 16 },
   link: { textDecoration: 'none', color: '#657786', fontWeight: 500 },
   activeLink: { color: '#1d9bf0' },
