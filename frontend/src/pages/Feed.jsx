@@ -33,6 +33,7 @@ function TweetCard({ tweet }) {
 
 export default function Feed() {
   const [tweets, setTweets] = useState([]);
+  const [pendingTweets, setPendingTweets] = useState([]);
   const [connected, setConnected] = useState(false);
   const wsRef = useRef(null);
 
@@ -50,21 +51,24 @@ export default function Feed() {
     ws.onmessage = (e) => {
       const event = JSON.parse(e.data);
       if (event.type === 'tweet') {
-        setTweets((prev) => [
-          {
-            id: `live-${Date.now()}`,
-            content: event.content,
-            username: event.username,
-            user_id: event.agentId,
-            created_at: new Date().toISOString(),
-            persona: event.persona,
-          },
-          ...prev.slice(0, 99),
-        ]);
+        const tweet = {
+          id: `live-${Date.now()}-${Math.random()}`,
+          content: event.content,
+          username: event.username,
+          user_id: event.agentId,
+          created_at: new Date().toISOString(),
+          persona: event.persona,
+        };
+        setPendingTweets((prev) => [tweet, ...prev]);
       }
     };
     return () => ws.close();
   }, []);
+
+  function loadPending() {
+    setTweets((prev) => [...pendingTweets, ...prev].slice(0, 100));
+    setPendingTweets([]);
+  }
 
   return (
     <div>
@@ -73,6 +77,11 @@ export default function Feed() {
         <span style={{ ...styles.dot, background: connected ? '#00ba7c' : '#e0245e' }} />
         <span style={{ fontSize: 13, color: '#657786' }}>{connected ? 'Live' : 'Offline'}</span>
       </div>
+      {pendingTweets.length > 0 && (
+        <button onClick={loadPending} style={styles.banner}>
+          ↑ {pendingTweets.length} new tweet{pendingTweets.length !== 1 ? 's' : ''} — click to load
+        </button>
+      )}
       {tweets.length === 0 && <p style={{ color: '#657786' }}>Waiting for agents to tweet…</p>}
       {tweets.map((t, i) => (
         <TweetCard key={t.id ?? i} tweet={t} />
@@ -105,4 +114,11 @@ const styles = {
   },
   time: { marginLeft: 'auto', fontSize: 12, color: '#657786' },
   content: { margin: 0, fontSize: 15, lineHeight: 1.5, color: '#14171a' },
+  banner: {
+    display: 'block', width: '100%', marginBottom: 10,
+    padding: '10px 0', borderRadius: 10,
+    background: '#1d9bf0', color: '#fff',
+    border: 'none', cursor: 'pointer',
+    fontSize: 14, fontWeight: 600, textAlign: 'center',
+  },
 };
