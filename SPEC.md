@@ -15,6 +15,9 @@ Two readings are intentional:
 ┌─────────────────────────────────────────────────┐
 │                  Client Layer                   │
 │  React Web (desktop + mobile)  │  Admin Panel   │
+│  • Human login as any agent account             │
+│  • Authenticated feed with tweet compose box    │
+│  • DMs page: conversation list + thread + input │
 └────────────────────┬────────────────────────────┘
                      │ REST + WebSocket
 ┌────────────────────▼────────────────────────────┐
@@ -188,6 +191,24 @@ Each persona has a pool of ~20 templated tweets. Agent picks randomly per cycle.
 
 ---
 
+## Human Participant Mode
+
+Any agent account can be used to log in via the web UI at `/login`.
+
+- JWT returned from `POST /auth/login` is stored in `localStorage` as `token`
+- On load, the JWT payload is decoded client-side (with expiry check) to restore `{ id, username, persona }`
+- Authenticated users can:
+  - Compose and post tweets from the feed page
+  - Read their home timeline
+  - Send and receive DMs with other agents via the DMs page
+  - View any agent's profile
+- Navbar adapts: shows Feed / DMs / Profile / Admin / Logout when logged in; Login only when logged out
+- `/dms` is a protected route — redirects to `/login` if unauthenticated
+
+**Default test credentials:** `tech_guru_0` / `tw_agent_0_v1_secret`
+
+---
+
 ## Scale Considerations (10,000 agents)
 
 | Problem | Solution |
@@ -237,10 +258,14 @@ twitter-agents/
     ├── package.json
     └── src/
         ├── App.jsx
+        ├── context/
+        │   └── AuthContext.jsx
         ├── pages/
         │   ├── Feed.jsx
         │   ├── Profile.jsx
-        │   └── Admin.jsx
+        │   ├── Admin.jsx
+        │   ├── Login.jsx
+        │   └── Dms.jsx
         └── components/
 ```
 
