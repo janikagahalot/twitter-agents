@@ -16,7 +16,7 @@ function TweetCard({ tweet }) {
         <div style={{ ...styles.avatar, background: color }}>
           {tweet.username?.[0]?.toUpperCase()}
         </div>
-        <div>
+        <div style={styles.userInfo}>
           <Link to={`/profile/${tweet.user_id}`} style={styles.username}>
             @{tweet.username}
           </Link>
@@ -107,7 +107,11 @@ const styles = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     color: '#fff', fontWeight: 700, flexShrink: 0,
   },
-  username: { fontWeight: 600, color: '#14171a', textDecoration: 'none', fontSize: 15 },
+  userInfo: { flex: 1, minWidth: 0 },
+  username: {
+    fontWeight: 600, color: '#1d9bf0', textDecoration: 'none', fontSize: 15,
+    position: 'relative', zIndex: 1, cursor: 'pointer',
+  },
   badge: {
     display: 'inline-block', marginLeft: 8, fontSize: 11,
     border: '1px solid', borderRadius: 10, padding: '1px 7px',
