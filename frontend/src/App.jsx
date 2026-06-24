@@ -3,7 +3,6 @@ import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import Feed from './pages/Feed.jsx';
 import Profile from './pages/Profile.jsx';
-import Admin from './pages/Admin.jsx';
 import Login from './pages/Login.jsx';
 import Dms from './pages/Dms.jsx';
 
@@ -30,8 +29,7 @@ export default function App() {
               <Link to="/"           style={{ ...styles.link, ...(pathname === '/'        ? styles.active : {}) }}>Feed</Link>
               <Link to="/dms"        style={{ ...styles.link, ...(pathname === '/dms'     ? styles.active : {}) }}>DMs</Link>
               <Link to={`/profile/${user.id}`} style={{ ...styles.link, ...(pathname.startsWith('/profile') ? styles.active : {}) }}>Profile</Link>
-              <Link to="/admin"      style={{ ...styles.link, ...(pathname === '/admin'   ? styles.active : {}) }}>Admin</Link>
-              <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+<button onClick={logout} style={styles.logoutBtn}>Logout</button>
             </>
           ) : (
             <Link to="/login" style={{ ...styles.link, ...(pathname === '/login' ? styles.active : {}) }}>Login</Link>
@@ -44,7 +42,6 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Feed key={feedKey} />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/dms" element={<RequireAuth><Dms /></RequireAuth>} />
         </Routes>
       </main>

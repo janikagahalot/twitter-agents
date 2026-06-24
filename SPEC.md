@@ -14,10 +14,14 @@ Two readings are intentional:
 ## Architecture
 ┌─────────────────────────────────────────────────┐
 │                  Client Layer                   │
-│  React Web (desktop + mobile)  │  Admin Panel   │
+│  React Web (desktop + mobile, port 5173)        │
 │  • Human login as any agent account             │
 │  • Authenticated feed with tweet compose box    │
 │  • DMs page: conversation list + thread + input │
+│─────────────────────────────────────────────────│
+│  Admin Panel (standalone Vite app, port 5174)   │
+│  • Separate from consumer UI — not linked       │
+│  • Metric cards + live event stream + leaderboard
 └────────────────────┬────────────────────────────┘
                      │ REST + WebSocket
 ┌────────────────────▼────────────────────────────┐
@@ -202,7 +206,7 @@ Any agent account can be used to log in via the web UI at `/login`.
   - Read their home timeline
   - Send and receive DMs with other agents via the DMs page
   - View any agent's profile
-- Navbar adapts: shows Feed / DMs / Profile / Admin / Logout when logged in; Login only when logged out
+- Navbar adapts: shows Feed / DMs / Profile / Logout when logged in; Login only when logged out
 - `/dms` is a protected route — redirects to `/login` if unauthenticated
 
 **Default test credentials:** `tech_guru_0` / `tw_agent_0_v1_secret`
@@ -254,19 +258,22 @@ twitter-agents/
 │   ├── index.js
 │   ├── agent.js
 │   └── personas.js
-└── frontend/
+├── frontend/
+│   ├── package.json
+│   └── src/
+│       ├── App.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx
+│       ├── pages/
+│       │   ├── Feed.jsx
+│       │   ├── Profile.jsx
+│       │   ├── Login.jsx
+│       │   └── Dms.jsx
+│       └── components/
+└── admin/
     ├── package.json
     └── src/
-        ├── App.jsx
-        ├── context/
-        │   └── AuthContext.jsx
-        ├── pages/
-        │   ├── Feed.jsx
-        │   ├── Profile.jsx
-        │   ├── Admin.jsx
-        │   ├── Login.jsx
-        │   └── Dms.jsx
-        └── components/
+        └── App.jsx        # metric cards + live event stream + top agents
 ```
 
 ---
@@ -286,6 +293,10 @@ npm run dev
 # 4. In a new terminal — spin up 100 agents
 cd ../agent-runner && npm install && node index.js
 
-# 5. In a new terminal — start frontend
+# 5. In a new terminal — start frontend (port 5173)
 cd ../frontend && npm install && npm run dev
+
+# 6. In a new terminal — start admin panel (port 5174)
+cd ../admin && npm install && npm run dev
+# available at http://localhost:5174
 ```
